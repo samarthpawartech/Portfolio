@@ -26,6 +26,7 @@ export function Projects() {
         { name: "JSP", color: "from-gray-500 to-gray-700" },
         { name: "JDBC", color: "from-gray-500 to-gray-700" },
         { name: "MySQL", color: "from-gray-600 to-gray-800" },
+        { name: "Frontend-Technologies", color: "from-gray-600 to-gray-800" },
       ],
     },
     {
@@ -45,6 +46,7 @@ export function Projects() {
         { name: "Spring Boot", color: "from-gray-600 to-gray-800" },
         { name: "REST APIs", color: "from-gray-500 to-gray-700" },
         { name: "MySQL", color: "from-gray-600 to-gray-800" },
+        { name: "Frontend-technologies", color: "from-gray-600 to-gray-800" },
       ],
     },
   ];
