@@ -1,5 +1,5 @@
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Code2,
   Database,
@@ -7,11 +7,13 @@ import {
   Braces,
   FileText,
   ExternalLink,
+  X,
 } from "lucide-react";
 
 export function Certifications() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
+  const [activePdf, setActivePdf] = useState<string | null>(null);
 
   const certifications = [
     {
@@ -43,7 +45,14 @@ export function Certifications() {
       gradient: "from-yellow-400 to-amber-400",
     },
     {
-      title: "C & C++ Certification",
+      title: "C++ Certification",
+      issuer: "Coding Seekho Institute, Nashik",
+      icon: Code2,
+      link: "/certificates/CPP.pdf",
+      gradient: "from-emerald-400 to-lime-400",
+    },
+    {
+      title: "C Programming Certification",
       issuer: "Coding Seekho Institute, Nashik",
       icon: Code2,
       link: "/certificates/C.pdf",
@@ -104,16 +113,17 @@ export function Certifications() {
                         {cert.issuer}
                       </p>
 
-                      <a
-                        href={cert.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors"
+                      {/* VIEW BUTTON (NO DOWNLOAD) */}
+                      <button
+                        onClick={() => setActivePdf(cert.link)}
+                        className="inline-flex items-center gap-2 text-sm font-semibold
+                                   text-amber-700 dark:text-amber-400
+                                   hover:text-orange-600 dark:hover:text-orange-300 transition-colors"
                       >
                         <FileText className="w-4 h-4" />
                         View Certificate
                         <ExternalLink className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -122,6 +132,26 @@ export function Certifications() {
           })}
         </div>
       </div>
+
+      {/* PDF VIEWER MODAL */}
+      {activePdf && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="relative bg-white w-full max-w-5xl h-[90vh] rounded-xl overflow-hidden">
+            <button
+              onClick={() => setActivePdf(null)}
+              className="absolute top-3 right-3 z-10 p-2 bg-red-500 text-white rounded-full"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <iframe
+              src={activePdf}
+              className="w-full h-full"
+              title="Certificate Viewer"
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }
