@@ -46,10 +46,8 @@ function HomePage() {
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [blocked, setBlocked] = useState(false);
-  const [mobileBlur, setMobileBlur] = useState(false);
 
-  /* 🌙 Theme */
+  /* 🌙 Theme handling */
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia(
@@ -59,60 +57,19 @@ export default function App() {
     if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
       setDarkMode(true);
       document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
     }
   }, []);
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", !darkMode ? "dark" : "light");
+    setDarkMode((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
   };
 
-  /* 🚫 Desktop: Screenshot + DevTools */
-  useEffect(() => {
-    const blockKeys = (e: KeyboardEvent) => {
-      if (
-        e.key === "PrintScreen" ||
-        e.key === "F12" ||
-        (e.ctrlKey && e.key.toLowerCase() === "s") ||
-        (e.ctrlKey &&
-          e.shiftKey &&
-          ["i", "j", "c"].includes(e.key.toLowerCase()))
-      ) {
-        e.preventDefault();
-        setBlocked(true);
-        setTimeout(() => setBlocked(false), 2000);
-      }
-    };
-
-    document.addEventListener("keydown", blockKeys);
-    return () => document.removeEventListener("keydown", blockKeys);
-  }, []);
-
-  /* 🚫 Disable Right Click */
-  useEffect(() => {
-    const disableRightClick = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener("contextmenu", disableRightClick);
-    return () => document.removeEventListener("contextmenu", disableRightClick);
-  }, []);
-
-  useEffect(() => {
-    const disableTouch = (e: TouchEvent) => {
-      if (e.touches.length > 1) e.preventDefault();
-    };
-
-    document.addEventListener("touchstart", disableTouch, { passive: false });
-    document.addEventListener("touchmove", disableTouch, { passive: false });
-
-    return () => {
-      document.removeEventListener("touchstart", disableTouch);
-      document.removeEventListener("touchmove", disableTouch);
-    };
-  }, []);
-
-  /* 👁 Blur when app goes background (Desktop + Mobile) */
+  /* 👁 Blur when app goes to background (Desktop + Mobile) */
   useEffect(() => {
     const handleVisibility = () => {
       document.body.style.filter = document.hidden ? "blur(14px)" : "none";
@@ -121,17 +78,6 @@ export default function App() {
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, []);
-
-  /* 📱 Mobile Screenshot Neutralizer (best possible) */
-  useEffect(() => {
-    const handleTouchEnd = () => {
-      setMobileBlur(true);
-      setTimeout(() => setMobileBlur(false), 800);
-    };
-
-    window.addEventListener("touchend", handleTouchEnd);
-    return () => window.removeEventListener("touchend", handleTouchEnd);
   }, []);
 
   return (
@@ -151,19 +97,7 @@ export default function App() {
 
       <Footer />
 
-      {/* 🚨 Desktop Screenshot Warning */}
-      {blocked && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 text-white text-xl font-semibold">
-          Screenshots are disabled 🚫
-        </div>
-      )}
-
-      {/* 📱 Mobile Blur Overlay */}
-      {mobileBlur && (
-        <div className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-xl" />
-      )}
-
-      {/* 🔒 Watermark (recommended) */}
+      {/* 🔒 Subtle Watermark */}
       <div className="fixed bottom-3 right-4 opacity-40 text-xs pointer-events-none z-[1]">
         © Samarth Dhanaji Pawar
       </div>
