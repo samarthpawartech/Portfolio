@@ -68,7 +68,7 @@ export function Hero() {
             {/* Buttons */}
             <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-8">
               {/* Download Resume */}
-              <a href="/resume/SAMARTH_DHANAJI_PAWAR_CVFD.pdf" download>
+              <a href="/resume/SAMARTH DHANAJI PAWAR FD.pdf" download>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
