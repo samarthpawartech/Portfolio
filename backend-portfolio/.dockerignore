@@ -1,0 +1,10 @@
+target/
+.idea/
+.git/
+.vscode/
+*.iml
+.DS_Store
+HELP.md
+.env
+.env.*
+.env.example

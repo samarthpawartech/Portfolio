@@ -1,0 +1,13 @@
+@import "./fonts.css";
+@import "./tailwind.css";
+@import "./theme.css";
+
+/* Prevent the ambient background layer from ever creating scroll/overflow */
+#root {
+  position: relative;
+  isolation: isolate;
+}
+
+img {
+  -webkit-user-drag: none;
+}

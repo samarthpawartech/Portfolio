@@ -1,0 +1,263 @@
+/* ==========================================================================
+   DESIGN TOKENS — registered into Tailwind v4 via @theme so utilities like
+   bg-neon-cyan, text-neon-purple/70, border-panel-line are generated
+   automatically.
+   ========================================================================== */
+@theme {
+  /* surfaces */
+  --color-void: #050505;
+  --color-void-soft: #0a0a0e;
+  --color-void-elevated: #0d0d12;
+  --color-panel: rgba(255, 255, 255, 0.05);
+  --color-panel-line: rgba(255, 255, 255, 0.12);
+
+  /* neon accents — exact brief palette */
+  --color-neon-cyan: #00f5ff;
+  --color-neon-purple: #7b2eff;
+  --color-neon-green: #00ff88;
+  --color-neon-pink: #ff2e88;
+  --color-neon-orange: #ff8a00;
+
+  /* text */
+  --color-ink: #f6f8fc;
+  --color-ink-muted: #a3acc2;
+  --color-ink-dim: #6b7286;
+
+  /* type */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* motion easings */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+@layer base {
+  * {
+    border-color: var(--color-panel-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-void);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--color-neon-cyan);
+    color: #05070a;
+  }
+
+  /* Only hides the native cursor once CustomCursor confirms a fine-pointer
+     device and has mounted — never hidden on touch or as a JS-failure trap */
+  body.cursor-none-active,
+  body.cursor-none-active a,
+  body.cursor-none-active button {
+    cursor: none;
+  }
+
+  /* Visible, intentional keyboard focus (never removed, only restyled) */
+  :focus-visible {
+    outline: 2px solid var(--color-neon-cyan);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Custom premium scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, var(--color-neon-cyan), var(--color-neon-purple));
+    border-radius: 999px;
+    border: 2px solid var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, var(--color-neon-purple), var(--color-neon-pink));
+  }
+  html {
+    scrollbar-color: var(--color-neon-purple) var(--color-void);
+    scrollbar-width: thin;
+  }
+}
+
+/* ==========================================================================
+   REUSABLE SURFACES
+   ========================================================================== */
+@layer components {
+  .glass {
+    background: var(--color-panel);
+    border: 1px solid var(--color-panel-line);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  .glass-strong {
+    background: rgba(9, 9, 13, 0.72);
+    border: 1px solid var(--color-panel-line);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(90deg, var(--color-neon-cyan), var(--color-neon-purple) 55%, var(--color-neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glow-cyan { filter: drop-shadow(0 0 22px rgba(0, 245, 255, 0.35)); }
+  .glow-purple { filter: drop-shadow(0 0 22px rgba(123, 46, 255, 0.35)); }
+  .glow-pink { filter: drop-shadow(0 0 22px rgba(255, 46, 136, 0.35)); }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--color-neon-cyan);
+  }
+
+  .btn-focus-ring:focus-visible {
+    outline: 2px solid var(--color-neon-cyan);
+    outline-offset: 3px;
+  }
+}
+
+/* ==========================================================================
+   KEYFRAME LIBRARY
+   ========================================================================== */
+@layer utilities {
+  @keyframes spin-cw {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spin-ccw {
+    to { transform: rotate(-360deg); }
+  }
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+  @keyframes float-y-sm {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+  @keyframes blink-caret {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes aurora-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(3%, -4%) scale(1.08); }
+    66% { transform: translate(-3%, 3%) scale(0.96); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  @keyframes grid-pan {
+    from { background-position: 0 0; }
+    to { background-position: 64px 64px; }
+  }
+  @keyframes scan-sweep {
+    0% { transform: translateY(-100%); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+  @keyframes dash-flow {
+    to { stroke-dashoffset: -240; }
+  }
+  @keyframes marquee-x {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes rise-fade {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer-sweep {
+    from { transform: translateX(-150%) skewX(-12deg); }
+    to { transform: translateX(250%) skewX(-12deg); }
+  }
+  /* Single shared orbit keyframe: rotate() translateX() rotate(-angle) keeps
+     the child upright while it sweeps a circle. Every orbiting item uses this
+     SAME keyframe, duration and radius — only animation-delay differs, which
+     is mathematically equivalent to varying each item's starting angle. */
+  @keyframes orbit-shared {
+    from {
+      transform: rotate(0deg) translateX(var(--orbit-radius, 0px)) rotate(0deg);
+    }
+    to {
+      transform: rotate(calc(var(--orbit-dir, 1) * 360deg)) translateX(var(--orbit-radius, 0px))
+        rotate(calc(var(--orbit-dir, 1) * -360deg));
+    }
+  }
+
+  .anim-spin-cw { animation: spin-cw linear infinite; }
+  .anim-spin-ccw { animation: spin-ccw linear infinite; }
+  .anim-float { animation: float-y ease-in-out infinite; }
+  .anim-float-sm { animation: float-y-sm ease-in-out infinite; }
+  .anim-pulse-glow { animation: pulse-glow ease-in-out infinite; }
+  .anim-aurora { animation: aurora-drift ease-in-out infinite; }
+  .anim-grid-pan { animation: grid-pan linear infinite; }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   MOTION SAFETY — respected across both CSS keyframes and (via JS,
+   useReducedMotion) Framer Motion driven interactions.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Printing (e.g. "save as PDF" to share the portfolio) renders the whole
+   page at once, well before scroll-linked reveals would normally fire —
+   force every animated element to its resting, fully-visible state. */
+@media print {
+  * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .fixed {
+    position: absolute !important;
+  }
+}

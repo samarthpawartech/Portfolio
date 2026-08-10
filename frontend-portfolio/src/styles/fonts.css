@@ -1,0 +1,12 @@
+/**
+ * Type system
+ * -----------
+ * Space Grotesk  → display/headings (a geometric, technical face for the
+ *                  huge glowing name + section titles)
+ * Inter          → body copy (clean, highly legible at small sizes)
+ * JetBrains Mono → code eyebrows, terminal UI, badges, stat numbers
+ *
+ * Fonts are requested via <link> tags in index.html (with preconnect)
+ * rather than @import here, since @import is discovered late by the
+ * browser and would delay first paint of text.
+ */
