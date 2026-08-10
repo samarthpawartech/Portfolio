@@ -88,7 +88,7 @@ const CATEGORIES = [
   {
     icon: Terminal,
     title: "Tools & DevOps",
-    skills: ["Git", "GitHub", "Maven", "Docker", "Postman"],
+    skills: ["Git", "GitHub", "Maven", "Docker", "Postman", "Vercel", "Render"],
     accent: "orange",
   },
   {
