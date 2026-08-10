@@ -6,6 +6,7 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /app
 
+
 # =========================================================
 # MAVEN DEPENDENCIES
 # =========================================================
@@ -14,6 +15,7 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
 RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+
 
 # =========================================================
 # APPLICATION SOURCE
@@ -34,17 +36,37 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Create non-root user
+
+# =========================================================
+# CREATE NON-ROOT USER
+# =========================================================
+
 RUN addgroup -S spring && adduser -S spring -G spring
 
-# Copy Spring Boot JAR
+
+# =========================================================
+# COPY SPRING BOOT JAR
+# =========================================================
+
 COPY --from=build /app/target/*.jar app.jar
 
-# Run application as non-root user
+
+# =========================================================
+# RUN AS NON-ROOT USER
+# =========================================================
+
 USER spring:spring
 
-# Default application port
+
+# =========================================================
+# DEFAULT PORT
+# =========================================================
+
 EXPOSE 8080
 
-# Start Spring Boot
+
+# =========================================================
+# START SPRING BOOT
+# =========================================================
+
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
