@@ -6,23 +6,28 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-    private final String receiverEmail;
-    private final String fromAddress;
+    private static final ZoneId INDIA_ZONE =
+            ZoneId.of("Asia/Kolkata");
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 
+    private final JavaMailSender mailSender;
+    private final String receiverEmail;
+    private final String fromAddress;
+
     public EmailService(
             JavaMailSender mailSender,
-            @Value("${contact.receiver-email}") String receiverEmail,
-            @Value("${spring.mail.username}") String fromAddress
+            @Value("${contact.receiver-email:}") String receiverEmail,
+            @Value("${spring.mail.username:}") String fromAddress
     ) {
         this.mailSender = mailSender;
         this.receiverEmail = receiverEmail;
@@ -31,26 +36,44 @@ public class EmailService {
 
     public void sendContactNotification(Contact contact) {
 
+        if (contact == null) {
+            throw new IllegalArgumentException("Contact cannot be null");
+        }
+
+        if (receiverEmail == null || receiverEmail.isBlank()) {
+            throw new IllegalStateException(
+                    "CONTACT_RECEIVER_EMAIL is not configured"
+            );
+        }
+
+        if (fromAddress == null || fromAddress.isBlank()) {
+            throw new IllegalStateException(
+                    "MAIL_USERNAME is not configured"
+            );
+        }
+
+        String phone = formatPhone(contact.getPhone());
+        String receivedTime = formatIndianTime(contact.getCreatedAt());
+
         SimpleMailMessage mail = new SimpleMailMessage();
 
         mail.setFrom(fromAddress);
-
         mail.setTo(receiverEmail);
 
-        mail.setReplyTo(contact.getEmail());
+        if (contact.getEmail() != null
+                && !contact.getEmail().isBlank()) {
 
-        mail.setSubject(
-                "Portfolio Contact: " + contact.getSubject()
+            mail.setReplyTo(contact.getEmail().trim());
+        }
+
+        String subject = safeValue(
+                contact.getSubject(),
+                "New Portfolio Contact"
         );
 
-        String displayPhone = formatPhone(contact.getPhone());
+        mail.setSubject("Portfolio Contact: " + subject);
 
-        String receivedTime = formatIndianTime(
-                contact.getCreatedAt()
-        );
-
-        mail.setText(
-                """
+        String body = """
                 ========================================
                 New Portfolio Contact Message
                 ========================================
@@ -70,27 +93,19 @@ public class EmailService {
                 portfolio contact form.
                 ========================================
                 """.formatted(
-                        contact.getName(),
-                        contact.getEmail(),
-                        displayPhone,
-                        contact.getSubject(),
-                        contact.getMessage(),
-                        receivedTime
-                )
+                safeValue(contact.getName(), "Not provided"),
+                safeValue(contact.getEmail(), "Not provided"),
+                phone,
+                subject,
+                safeValue(contact.getMessage(), "Not provided"),
+                receivedTime
         );
+
+        mail.setText(body);
 
         mailSender.send(mail);
     }
 
-    /**
-     * Formats the phone number for email display.
-     *
-     * Database:
-     * +919322007416
-     *
-     * Email:
-     * +91 9322007416
-     */
     private String formatPhone(String phone) {
 
         if (phone == null || phone.isBlank()) {
@@ -99,28 +114,38 @@ public class EmailService {
 
         String cleanedPhone = phone.trim();
 
-        // India
+        // +919322007416
         if (cleanedPhone.matches("^\\+91[0-9]{10}$")) {
             return "+91 " + cleanedPhone.substring(3);
         }
 
-        // Other countries:
-        // Keep the E.164 number as stored.
+        // If backend receives only digits
+        // 9322007416
+        if (cleanedPhone.matches("^[0-9]{10}$")) {
+            return "+91 " + cleanedPhone;
+        }
+
         return cleanedPhone;
     }
 
-    /**
-     * Formats LocalDateTime for Indian email display.
-     *
-     * Example:
-     * 09-08-2026 10:30:25 PM
-     */
-    private String formatIndianTime(LocalDateTime dateTime) {
+    private String formatIndianTime(Instant timestamp) {
 
-        if (dateTime == null) {
+        if (timestamp == null) {
             return "Not available";
         }
 
-        return dateTime.format(DATE_TIME_FORMATTER);
+        ZonedDateTime indianTime =
+                timestamp.atZone(INDIA_ZONE);
+
+        return indianTime.format(DATE_TIME_FORMATTER);
+    }
+
+    private String safeValue(String value, String fallback) {
+
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+
+        return value.trim();
     }
 }

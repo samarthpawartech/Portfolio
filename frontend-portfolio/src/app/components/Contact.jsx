@@ -94,7 +94,9 @@ const ACCENT = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[0-9]{6,15}$/;
 
-const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
+const COUNTRY_NAMES = new Intl.DisplayNames(["en"], {
+  type: "region",
+});
 
 const COUNTRY_CODES = getCountries()
   .map((iso) => ({
@@ -111,9 +113,10 @@ const COUNTRY_CODES = getCountries()
 
 const DEFAULT_COUNTRY =
   COUNTRY_CODES.find((country) => country.code === "IN") || COUNTRY_CODES[0];
+
 const DEFAULT_COUNTRY_CODE = DEFAULT_COUNTRY.dial;
 
-function CountryPicker({ value, countryIso, onChange, disabled, error }) {
+function CountryPicker({ countryIso, onChange, disabled, error }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const rootRef = useRef(null);
@@ -124,7 +127,9 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     if (!q) return COUNTRY_CODES;
+
     return COUNTRY_CODES.filter(
       (country) =>
         country.country.toLowerCase().includes(q) ||
@@ -135,23 +140,28 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
 
   useEffect(() => {
     if (!open) return undefined;
+
     const handleOutside = (event) => {
       if (rootRef.current && !rootRef.current.contains(event.target)) {
         setOpen(false);
         setQuery("");
       }
     };
+
     document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+    };
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative z-50">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
-        className={`flex h-[66px] w-full items-center justify-between rounded-xl border bg-transparent px-3.5 text-left outline-none transition-all ${
+        onClick={() => setOpen((value) => !value)}
+        className={`flex h-[66px] w-full items-center gap-2 rounded-xl border bg-transparent px-3.5 text-left outline-none transition-all ${
           error
             ? "border-red-400/60"
             : open
@@ -161,17 +171,20 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="text-lg">{selected.flag}</span>
-          <span className="text-sm font-semibold text-ink">
-            {selected.dial}
-          </span>
-          <span className="hidden truncate text-xs text-ink-dim xl:inline">
-            {selected.country}
-          </span>
+        <span className="w-7 flex-shrink-0 text-lg">{selected.flag}</span>
+
+        <span className="w-12 flex-shrink-0 text-sm font-semibold text-ink">
+          {selected.dial}
         </span>
+
+        <span className="min-w-0 flex-1 truncate text-sm text-ink-dim">
+          {selected.country}
+        </span>
+
         <ChevronDown
-          className={`h-4 w-4 flex-shrink-0 text-ink-dim transition-transform ${open ? "rotate-180 text-neon-cyan" : ""}`}
+          className={`h-4 w-4 flex-shrink-0 text-ink-dim transition-transform ${
+            open ? "rotate-180 text-neon-cyan" : ""
+          }`}
         />
       </button>
 
@@ -183,15 +196,18 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
           <div className="border-b border-white/10 bg-[#111] p-2">
             <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 focus-within:border-neon-cyan">
               <Search className="h-4 w-4 flex-shrink-0 text-ink-dim" />
+
               <input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search country or code..."
                 className="h-10 w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-dim"
                 autoFocus
+                onClick={(event) => event.stopPropagation()}
               />
             </div>
           </div>
+
           <div className="max-h-72 overflow-y-auto p-1.5">
             {filtered.length === 0 ? (
               <div className="px-3 py-5 text-center text-sm text-ink-dim">
@@ -200,6 +216,7 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
             ) : (
               filtered.map((country) => {
                 const active = country.code === selected.code;
+
                 return (
                   <button
                     key={country.code}
@@ -211,15 +228,21 @@ function CountryPicker({ value, countryIso, onChange, disabled, error }) {
                       setOpen(false);
                       setQuery("");
                     }}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${active ? "bg-neon-cyan/10 text-neon-cyan" : "text-ink hover:bg-white/[0.06]"}`}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                      active
+                        ? "bg-neon-cyan/10 text-neon-cyan"
+                        : "text-ink hover:bg-white/[0.06]"
+                    }`}
                   >
                     <span className="w-7 flex-shrink-0 text-lg">
                       {country.flag}
                     </span>
+
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {country.country}
                     </span>
-                    <span className="text-xs font-semibold text-ink-dim">
+
+                    <span className="w-12 flex-shrink-0 text-right text-xs font-semibold text-ink-dim">
                       {country.dial}
                     </span>
                   </button>
@@ -289,18 +312,23 @@ function ContactForm() {
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
+  const cleanPhone = form.phone.replace(/\D/g, "");
+
   const errors = {
     name: touched.name && !form.name.trim() ? "Please enter your name" : "",
+
     email:
-      touched.email && !EMAIL_RE.test(form.email)
+      touched.email && !EMAIL_RE.test(form.email.trim())
         ? "Enter a valid email address"
         : "",
+
     phone:
-      touched.phone && !form.phone.trim()
+      touched.phone && !cleanPhone
         ? "Phone number is required"
-        : touched.phone && !PHONE_RE.test(form.phone.replace(/\D/g, ""))
+        : touched.phone && !PHONE_RE.test(cleanPhone)
           ? "Enter a valid phone number (6-15 digits)"
           : "",
+
     message:
       touched.message && form.message.trim().length < 10
         ? "A few more words would help (10+ characters)"
@@ -308,28 +336,28 @@ function ContactForm() {
   };
 
   const isValid =
-    form.name.trim() &&
+    form.name.trim().length > 0 &&
     EMAIL_RE.test(form.email.trim()) &&
-    form.phone.trim() &&
-    PHONE_RE.test(form.phone.replace(/\D/g, "")) &&
-    form.phone.replace(/\D/g, "").length <=
-      (COUNTRY_CODES.find((c) => c.code === form.countryCode)?.max || 15) &&
+    PHONE_RE.test(cleanPhone) &&
+    cleanPhone.length <= 15 &&
     form.message.trim().length >= 10;
 
-  const handleChange = (field) => (e) =>
+  const handleChange = (field) => (event) => {
     setForm((current) => ({
       ...current,
-      [field]: e.target.value,
+      [field]: event.target.value,
     }));
+  };
 
-  const handleBlur = (field) => () =>
+  const handleBlur = (field) => () => {
     setTouched((current) => ({
       ...current,
       [field]: true,
     }));
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     setTouched({
       name: true,
@@ -338,36 +366,61 @@ function ContactForm() {
       message: true,
     });
 
-    if (!isValid || status === "submitting") return;
+    if (!isValid || status === "submitting") {
+      return;
+    }
 
     setStatus("submitting");
     setErrorMsg("");
+
+    /*
+     * IMPORTANT:
+     * The backend Contact entity expects `phone`.
+     *
+     * We send the selected country code + local digits as
+     * a complete E.164-style number.
+     *
+     * Example:
+     * countryCode = +91
+     * phone       = 9322007416
+     * backend     = +919322007416
+     */
+    const fullPhone = `${form.countryCode}${cleanPhone}`;
+
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: fullPhone,
+      subject: `Portfolio inquiry from ${form.name.trim()}`,
+      message: form.message.trim(),
+    };
+
+    console.log("Sending contact payload:", payload);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          countryCode: form.countryCode,
-          phoneNumber: form.phone.replace(/\D/g, "") || null,
-          subject: `Portfolio inquiry from ${form.name.trim()}`,
-          message: form.message.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
+      const data = await res.json().catch(() => null);
 
+      if (!res.ok) {
         setStatus("error");
-        setErrorMsg(data?.message || "Something went wrong. Please try again.");
+        setErrorMsg(
+          data?.message ||
+            data?.error ||
+            `Server error (${res.status}). Please try again.`,
+        );
         return;
       }
 
       setStatus("success");
+
       setForm({
         name: "",
         email: "",
@@ -376,9 +429,11 @@ function ContactForm() {
         phone: "",
         message: "",
       });
+
       setTouched({});
-    } catch (err) {
-      console.error("Contact form request failed:", err);
+    } catch (error) {
+      console.error("Contact form request failed:", error);
+
       setStatus("error");
       setErrorMsg(
         "Couldn't reach the server — check your connection and try again.",
@@ -387,7 +442,7 @@ function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <FloatingField
         id="contact-name"
         label="Your Name"
@@ -410,31 +465,39 @@ function ContactForm() {
         error={errors.email}
         disabled={status === "submitting"}
         autoComplete="email"
+        maxLength={255}
       />
 
-      {/* Single required phone field: country picker + local number. */}
       <div>
-        <div className="grid grid-cols-[minmax(145px,0.9fr)_minmax(0,2fr)] gap-2 max-[520px]:grid-cols-1">
+        <div className="grid grid-cols-[minmax(170px,1fr)_minmax(0,2fr)] gap-2 max-[520px]:grid-cols-1">
           <CountryPicker
-            value={form.countryCode}
             countryIso={form.countryIso}
             onChange={(countryIso, countryCode) =>
-              setForm((current) => ({ ...current, countryIso, countryCode }))
+              setForm((current) => ({
+                ...current,
+                countryIso,
+                countryCode,
+              }))
             }
             disabled={status === "submitting"}
             error={errors.phone}
           />
+
           <div className="relative">
             <input
               id="contact-phone"
               type="tel"
               value={form.phone}
-              onChange={(e) =>
+              onChange={(event) => {
+                const digits = event.target.value
+                  .replace(/\D/g, "")
+                  .slice(0, 15);
+
                 setForm((current) => ({
                   ...current,
-                  phone: e.target.value.replace(/\D/g, "").slice(0, 15),
-                }))
-              }
+                  phone: digits,
+                }));
+              }}
               onBlur={handleBlur("phone")}
               placeholder=" "
               disabled={status === "submitting"}
@@ -443,8 +506,11 @@ function ContactForm() {
               inputMode="numeric"
               required
               aria-required="true"
-              className={`peer glass h-[66px] w-full rounded-xl border bg-transparent px-4 pb-2.5 pt-6 text-ink outline-none transition-colors placeholder:text-transparent focus:border-neon-cyan ${errors.phone ? "border-red-400/60" : "border-panel-line"}`}
+              className={`peer glass h-[66px] w-full rounded-xl border bg-transparent px-4 pb-2.5 pt-6 text-ink outline-none transition-colors placeholder:text-transparent focus:border-neon-cyan ${
+                errors.phone ? "border-red-400/60" : "border-panel-line"
+              }`}
             />
+
             <label
               htmlFor="contact-phone"
               className="pointer-events-none absolute left-4 top-2 text-xs font-medium text-ink-dim transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-xs peer-focus:text-neon-cyan"
@@ -453,9 +519,11 @@ function ContactForm() {
             </label>
           </div>
         </div>
+
         <p className="mt-1.5 text-[11px] text-ink-dim">
           Required • Country code + phone number
         </p>
+
         {errors.phone && (
           <p className="mt-1.5 text-xs text-red-400" role="alert">
             {errors.phone}
@@ -514,11 +582,11 @@ function ContactForm() {
 
 export function Contact() {
   return (
-    <section id="contact" className="relative py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="contact" className="py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="mb-10 max-w-3xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-neon-cyan">
+          <div className="mb-10 max-w-2xl">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-neon-cyan">
               Contact
             </p>
 
@@ -533,13 +601,12 @@ export function Contact() {
           </div>
         </Reveal>
 
-        {/* Contact method cards */}
         <div className="mb-8 grid gap-5 md:grid-cols-3">
-          {CONTACT_METHODS.map((method, i) => {
-            const a = ACCENT[method.accent];
+          {CONTACT_METHODS.map((method, index) => {
+            const accent = ACCENT[method.accent];
 
             return (
-              <Reveal key={method.title} delay={i * 0.1}>
+              <Reveal key={method.title} delay={index * 0.1}>
                 <motion.a
                   href={method.href}
                   target={method.href.startsWith("http") ? "_blank" : undefined}
@@ -553,7 +620,7 @@ export function Contact() {
                   className="glass group block h-full rounded-2xl p-6"
                 >
                   <span
-                    className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${a.bg} ${a.text}`}
+                    className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${accent.bg} ${accent.text}`}
                   >
                     <method.icon className="h-6 w-6" />
                   </span>
@@ -567,7 +634,7 @@ export function Contact() {
                   </p>
 
                   <p
-                    className={`mt-2.5 break-words text-sm font-semibold ${a.text}`}
+                    className={`mt-2.5 break-words text-sm font-semibold ${accent.text}`}
                   >
                     {method.value}
                   </p>
@@ -577,7 +644,6 @@ export function Contact() {
           })}
         </div>
 
-        {/* Form + Socials */}
         <div className="grid items-start gap-6 lg:grid-cols-5">
           <Reveal direction="left" className="lg:col-span-3">
             <div className="glass h-full rounded-3xl p-7 sm:p-8">
@@ -606,7 +672,7 @@ export function Contact() {
 
               <div className="space-y-2.5">
                 {SOCIAL_LINKS.map((social) => {
-                  const a = ACCENT[social.accent];
+                  const accent = ACCENT[social.accent];
 
                   return (
                     <a
@@ -618,7 +684,7 @@ export function Contact() {
                       className="btn-focus-ring group flex items-center gap-3 rounded-xl border border-white/10 p-3 transition-colors hover:border-white/20 hover:bg-white/[0.03]"
                     >
                       <span
-                        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${a.bg} ${a.text}`}
+                        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${accent.bg} ${accent.text}`}
                       >
                         <social.icon className="h-[18px] w-[18px]" />
                       </span>

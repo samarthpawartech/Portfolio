@@ -22,9 +22,7 @@ public class ContactController {
     public ResponseEntity<ContactResponse> createContact(
             @Valid @RequestBody ContactRequest request
     ) {
-
-        ContactResponse response =
-                contactService.createContact(request);
+        ContactResponse response = contactService.createContact(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

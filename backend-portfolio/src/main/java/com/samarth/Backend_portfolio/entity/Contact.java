@@ -1,16 +1,8 @@
 package com.samarth.Backend_portfolio.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 
 @Entity
 @Table(
@@ -52,17 +44,13 @@ public class Contact {
             nullable = false,
             updatable = false
     )
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
-    /**
-     * Automatically sets contact creation time
-     * using Indian Standard Time (Asia/Kolkata).
-     */
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now(
-                ZoneId.of("Asia/Kolkata")
-        );
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
     }
 
     public Long getId() {
@@ -109,7 +97,7 @@ public class Contact {
         this.message = message;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 }

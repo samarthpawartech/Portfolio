@@ -8,18 +8,12 @@ import jakarta.validation.constraints.Size;
 public record ContactRequest(
 
         @NotBlank(message = "Name is required")
-        @Size(
-                max = 100,
-                message = "Name must not exceed 100 characters"
-        )
+        @Size(max = 100, message = "Name must not exceed 100 characters")
         String name,
 
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email address")
-        @Size(
-                max = 255,
-                message = "Email must not exceed 255 characters"
-        )
+        @Size(max = 255, message = "Email must not exceed 255 characters")
         String email,
 
         @NotBlank(message = "Country code is required")
@@ -37,10 +31,7 @@ public record ContactRequest(
         String phoneNumber,
 
         @NotBlank(message = "Subject is required")
-        @Size(
-                max = 200,
-                message = "Subject must not exceed 200 characters"
-        )
+        @Size(max = 200, message = "Subject must not exceed 200 characters")
         String subject,
 
         @NotBlank(message = "Message is required")
@@ -50,6 +41,5 @@ public record ContactRequest(
                 message = "Message must be between 10 and 5000 characters"
         )
         String message
-
 ) {
 }
