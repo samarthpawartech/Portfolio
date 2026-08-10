@@ -29,11 +29,19 @@ public class ContactService {
     @Transactional
     public ContactResponse createContact(ContactRequest request) {
 
+        // ----------------------------------------
+        // NULL REQUEST VALIDATION
+        // ----------------------------------------
+
         if (request == null) {
             throw new IllegalArgumentException(
                     "Contact request cannot be null"
             );
         }
+
+        // ----------------------------------------
+        // READ REQUEST DATA SAFELY
+        // ----------------------------------------
 
         String name = request.name() == null
                 ? ""
@@ -49,8 +57,7 @@ public class ContactService {
 
         String phoneNumber = request.phoneNumber() == null
                 ? ""
-                : request.phoneNumber()
-                .replaceAll("\\D", "");
+                : request.phoneNumber().replaceAll("\\D", "");
 
         String subject = request.subject() == null
                 ? ""
@@ -60,9 +67,9 @@ public class ContactService {
                 ? ""
                 : request.message().trim();
 
-        // ==============================
+        // ----------------------------------------
         // REQUIRED FIELD VALIDATION
-        // ==============================
+        // ----------------------------------------
 
         if (name.isBlank()) {
             throw new IllegalArgumentException(
@@ -100,104 +107,91 @@ public class ContactService {
             );
         }
 
-        // ==============================
-        // EMAIL VALIDATION
-        // ==============================
-
-        if (!email.matches(
-                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
-        )) {
-            throw new IllegalArgumentException(
-                    "Invalid email address"
-            );
-        }
-
-        // ==============================
+        // ----------------------------------------
         // COUNTRY CODE VALIDATION
-        // ==============================
+        // ----------------------------------------
+        //
+        // Examples:
+        // +91
+        // +1
+        // +44
+        // +971
+        //
+        // ----------------------------------------
 
-        if (!countryCode.matches(
-                "^\\+[1-9][0-9]{0,3}$"
-        )) {
+        if (!countryCode.matches("^\\+[1-9][0-9]{0,3}$")) {
             throw new IllegalArgumentException(
                     "Invalid country code"
             );
         }
 
-        // ==============================
+        // ----------------------------------------
         // PHONE NUMBER VALIDATION
-        // ==============================
+        // ----------------------------------------
+        //
+        // 6 to 15 digits
+        //
+        // ----------------------------------------
 
-        if (!phoneNumber.matches(
-                "^[0-9]{6,15}$"
-        )) {
+        if (!phoneNumber.matches("^[0-9]{6,15}$")) {
             throw new IllegalArgumentException(
                     "Invalid phone number"
             );
         }
 
-        // ==============================
-        // CREATE FULL PHONE NUMBER
-        // ==============================
+        // ----------------------------------------
+        // CREATE COMPLETE INTERNATIONAL NUMBER
+        // ----------------------------------------
         //
-        // +91 + 9322007416
+        // Example:
         //
-        // = +919322007416
-        // ==============================
+        // Country Code : +91
+        // Number       : 9322007416
+        //
+        // Result:
+        // +919322007416
+        //
+        // ----------------------------------------
 
         String normalizedPhone =
                 countryCode + phoneNumber;
 
-        // ==============================
-        // DEBUG LOG
-        // ==============================
-
-        log.info(
-                "CONTACT DEBUG -> countryCode={}, phoneNumber={}, normalizedPhone={}",
-                countryCode,
-                phoneNumber,
-                normalizedPhone
-        );
-
-        // ==============================
-        // CREATE ENTITY
-        // ==============================
+        // ----------------------------------------
+        // CREATE CONTACT ENTITY
+        // ----------------------------------------
 
         Contact contact = new Contact();
 
         contact.setName(name);
         contact.setEmail(email);
+
+        // SQL stores complete international phone number
         contact.setPhone(normalizedPhone);
+
         contact.setSubject(subject);
         contact.setMessage(message);
 
-        // ==============================
-        // SAVE DATABASE
-        // ==============================
+        // ----------------------------------------
+        // SAVE TO DATABASE
+        // ----------------------------------------
 
         Contact saved =
                 contactRepository.save(contact);
 
         log.info(
-                "New contact saved: id={}, email={}, phone={}, createdAt={}",
+                "New contact message received: id={}, email={}, phone={}",
                 saved.getId(),
                 saved.getEmail(),
-                saved.getPhone(),
-                saved.getCreatedAt()
+                saved.getPhone()
         );
 
-        // ==============================
+        // ----------------------------------------
         // SEND EMAIL
-        // ==============================
+        // ----------------------------------------
 
         try {
 
             emailService.sendContactNotification(saved);
-
-            log.info(
-                    "Contact notification email sent successfully: contactId={}",
-                    saved.getId()
-            );
 
         } catch (Exception ex) {
 
@@ -208,9 +202,20 @@ public class ContactService {
             );
         }
 
-        // ==============================
+        // ----------------------------------------
         // RESPONSE
-        // ==============================
+        // ----------------------------------------
+        //
+        // Contact.createdAt is Instant
+        // ContactResponse expects Instant
+        //
+        // Therefore:
+        //
+        // saved.getCreatedAt()
+        //
+        // is passed directly.
+        //
+        // ----------------------------------------
 
         return new ContactResponse(
                 saved.getId(),
