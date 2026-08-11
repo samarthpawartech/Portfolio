@@ -19,7 +19,14 @@ import {
 import { Reveal } from "./shared/Reveal";
 import { MagneticButton } from "./shared/MagneticButton";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+// VITE_API_URL should point at your deployed backend (set it in your
+// host's environment variables — e.g. Vercel/Netlify project settings).
+// We only fall back to localhost while running `npm run dev`; falling
+// back to it in a production build would silently point every visitor's
+// browser at their own machine instead of your server.
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? "http://localhost:8080" : "");
 
 const CONTACT_METHODS = [
   {
@@ -161,7 +168,7 @@ function CountryPicker({ countryIso, onChange, disabled, error }) {
         type="button"
         disabled={disabled}
         onClick={() => setOpen((value) => !value)}
-        className={`flex h-[66px] w-full items-center gap-2 rounded-xl border bg-transparent px-3.5 text-left outline-none transition-all ${
+        className={`flex h-16.5 w-full items-center gap-2 rounded-xl border bg-transparent px-3.5 text-left outline-none transition-all ${
           error
             ? "border-red-400/60"
             : open
@@ -367,6 +374,14 @@ function ContactForm() {
     });
 
     if (!isValid || status === "submitting") {
+      return;
+    }
+
+    if (!API_BASE_URL) {
+      setStatus("error");
+      setErrorMsg(
+        "This form isn't connected to a server yet — please email me directly instead.",
+      );
       return;
     }
 
